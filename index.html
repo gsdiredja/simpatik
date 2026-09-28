@@ -2,1058 +2,647 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SIMPATIK - Sistem Informasi Piket, Konseling & Ketertiban</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SIMPATIK - SMAN 1 Muncar</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- SheetJS for Excel -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- QR Code & Scanner -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- HTML5 QR Code Scanner -->
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
   <style>
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-    /* Safe Area Inset untuk HP Berponi/Notch */
-    .safe-top { padding-top: env(safe-area-inset-top, 12px); }
-    .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 16px); }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 4px; height: 4px; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
-
-    /* Animasi Laser Scanner */
+    body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
     @keyframes laserAnim {
-      0% { top: 8%; opacity: 0.9; }
+      0% { top: 10%; opacity: 0.8; }
       50% { top: 88%; opacity: 1; }
-      100% { top: 8%; opacity: 0.9; }
+      100% { top: 10%; opacity: 0.8; }
     }
-    .laser-line { animation: laserAnim 2.2s infinite ease-in-out; }
-
-    @media print {
-      body * { visibility: hidden; }
-      #printArea, #printArea * { visibility: visible; }
-      #printArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
-    }
+    .scanner-laser { animation: laserAnim 2.2s infinite ease-in-out; }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col pb-24">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col pb-20 select-none">
 
-  <!-- TOP MOBILE APP BAR -->
-  <header class="bg-indigo-950 text-white sticky top-0 z-40 border-b border-indigo-900 shadow-sm safe-top">
-    <div class="px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-xs shadow-inner">
-          S
-        </div>
+  <!-- HEADER APLIKASI -->
+  <header class="bg-indigo-950 text-white sticky top-0 z-40 border-b border-indigo-900 shadow">
+    <div class="px-4 py-2.5 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-sm">S</div>
         <div>
-          <h1 class="text-sm font-extrabold tracking-tight flex items-center gap-1.5 leading-none">
+          <h1 class="text-sm font-extrabold flex items-center gap-1.5 leading-none">
             SIMPATIK
-            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500 text-white">Mobile</span>
+            <span class="text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded font-bold">Cloud Sync</span>
           </h1>
-          <span class="text-[10px] text-indigo-300 font-medium leading-none block mt-0.5" id="headerSubtitle">SMAN 1 Muncar</span>
+          <span class="text-[10px] text-indigo-300 block mt-0.5">SMAN 1 Muncar &bull; Paperless</span>
         </div>
       </div>
-
-      <!-- Tombol Scan Cepat Header -->
-      <button onclick="openScannerModal('auto')" class="bg-emerald-500 active:scale-95 text-slate-950 font-black text-xs px-3 py-1.5 rounded-xl shadow flex items-center gap-1.5">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
-        <span>Pindai</span>
+      <button onclick="openScannerModal()" class="bg-emerald-500 active:scale-95 text-slate-950 font-black text-xs px-3 py-1.5 rounded-xl shadow flex items-center gap-1">
+        📷 Scan QR
       </button>
     </div>
 
-    <!-- Live Counter Strip -->
+    <!-- Sub-bar Info -->
     <div class="bg-indigo-900/80 px-4 py-1.5 flex items-center justify-between text-[11px] border-t border-indigo-800/60">
-      <div class="flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span id="roleBadgeLabel" class="font-bold text-indigo-200">Peran: Guru Piket</span>
-      </div>
-      <div class="flex items-center gap-2 font-mono">
-        <span class="bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded border border-rose-500/30">Telat: <b id="statLate">0</b></span>
-        <span class="bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30">Keluar: <b id="statOutside">0</b></span>
-        <span class="bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30">BK: <b id="statBK">0</b></span>
-      </div>
+      <span id="roleLabel" class="font-bold text-indigo-200">Peran: Guru Piket</span>
+      <button onclick="syncFromCloud(true)" class="text-emerald-300 font-bold active:scale-95 flex items-center gap-1">
+        🔄 Sinkron Cloud
+      </button>
     </div>
   </header>
 
-  <!-- MAIN SCROLLABLE CONTAINER -->
-  <main class="flex-1 px-3.5 py-3 space-y-3.5 max-w-md mx-auto w-full">
+  <!-- KONTEN UTAMA -->
+  <main class="flex-1 px-3.5 py-3 max-w-md mx-auto w-full space-y-3.5">
 
-    <!-- ==================== 1. VIEW GURU PIKET ==================== -->
+    <!-- VIEW 1: GURU PIKET -->
     <section id="view-piket" class="space-y-3">
-      <!-- 2 Kartu Tombol Utama (Akses Jempol Mudah) -->
       <div class="grid grid-cols-2 gap-2.5">
-        <button onclick="openScannerModal('terlambat')" class="bg-gradient-to-br from-indigo-600 to-indigo-700 active:scale-98 text-white p-3.5 rounded-2xl shadow-sm text-left flex flex-col justify-between h-28 border border-indigo-500/30">
-          <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-lg">📸</div>
-          <div>
-            <div class="text-xs font-black">Scan Siswa Telat</div>
-            <div class="text-[10px] text-indigo-200">Kamera HP Piket</div>
-          </div>
+        <button onclick="setScanMode('piket-late'); openScannerModal();" class="bg-indigo-600 active:scale-95 text-white p-3.5 rounded-2xl shadow text-left flex flex-col justify-between h-24">
+          <span class="text-xl">📸</span>
+          <div class="text-xs font-bold leading-tight">Scan Kartu Siswa Telat</div>
         </button>
-
-        <button onclick="openPermitModal()" class="bg-gradient-to-br from-amber-600 to-amber-700 active:scale-98 text-white p-3.5 rounded-2xl shadow-sm text-left flex flex-col justify-between h-28 border border-amber-500/30">
-          <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-lg">📝</div>
-          <div>
-            <div class="text-xs font-black">Buat Izin Keluar</div>
-            <div class="text-[10px] text-amber-200">QR Validasi Gerbang</div>
-          </div>
+        <button onclick="openPermitModal()" class="bg-amber-600 active:scale-95 text-white p-3.5 rounded-2xl shadow text-left flex flex-col justify-between h-24">
+          <span class="text-xl">🚪</span>
+          <div class="text-xs font-bold leading-tight">Terbitkan Izin Keluar</div>
         </button>
       </div>
 
-      <!-- Input Cepat Manual (NIS / Nama) -->
-      <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2">
-        <input type="text" id="manualInputText" placeholder="Ketik NIS (cth: 202601) atau Nama..." class="flex-1 bg-slate-100 px-3 py-2 rounded-xl text-xs border border-transparent focus:border-indigo-500 focus:bg-white focus:outline-none">
-        <button onclick="quickManualAction()" class="bg-indigo-600 active:scale-95 text-white font-bold text-xs px-3 py-2 rounded-xl shrink-0">
-          Cari
+      <!-- Quick Search NIS / Nama -->
+      <div class="bg-white p-2.5 rounded-2xl border border-slate-200 flex gap-2">
+        <input type="text" id="piketManualInput" placeholder="Ketik NIS (cth: 202601) atau Nama..." class="flex-1 text-xs bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500">
+        <button onclick="searchStudentManual('late')" class="bg-indigo-600 text-white font-bold text-xs px-3 py-2 rounded-xl active:scale-95 shrink-0">
+          Input
         </button>
       </div>
 
-      <!-- Tab Switcher Daftar: Terlambat vs Izin -->
-      <div class="bg-slate-200 p-1 rounded-xl flex text-xs font-bold text-slate-600">
-        <button onclick="switchPiketTab('lateList')" id="tabBtnLate" class="flex-1 py-1.5 rounded-lg bg-white text-indigo-700 shadow-sm">
-          Siswa Telat Hari Ini
-        </button>
-        <button onclick="switchPiketTab('permitList')" id="tabBtnPermit" class="flex-1 py-1.5 rounded-lg text-slate-600">
-          Izin Keluar Aktif
-        </button>
-      </div>
-
-      <!-- Container Daftar Terlambat -->
-      <div id="piketLateContainer" class="space-y-2">
-        <!-- Injected by JS -->
-      </div>
-
-      <!-- Container Daftar Izin -->
-      <div id="piketPermitContainer" class="space-y-2 hidden">
-        <!-- Injected by JS -->
+      <!-- Rekap Terlambat Hari Ini -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm space-y-2">
+        <div class="flex justify-between items-center border-b pb-2">
+          <span class="text-xs font-bold text-slate-800">Daftar Terlambat Hari Ini</span>
+          <span class="text-[10px] bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded-full" id="countLate">0 Siswa</span>
+        </div>
+        <div id="listLateContainer" class="space-y-2 text-xs divide-y divide-slate-100">
+          <p class="text-slate-400 text-center py-4">Belum ada siswa terlambat hari ini.</p>
+        </div>
       </div>
     </section>
 
-    <!-- ==================== 2. VIEW SECURITY GERBANG ==================== -->
+    <!-- VIEW 2: SECURITY GERBANG -->
     <section id="view-security" class="space-y-3 hidden">
-      <div class="bg-slate-900 text-white p-4 rounded-2xl border border-slate-800 text-center space-y-2.5">
-        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+      <div class="bg-slate-900 text-white p-4 rounded-2xl text-center space-y-2.5 shadow">
+        <div class="inline-block px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
           Pos Satpam Gerbang Utama
         </div>
-        <h2 class="text-sm font-black">Scan Validasi Keluar & Masuk</h2>
-        <p class="text-[11px] text-slate-300">Arahkan kamera HP ke QR Code surat izin yang dibawa siswa.</p>
-
-        <button onclick="openScannerModal('security')" class="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-98 text-slate-950 font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
-          Buka Kamera Scanner Gerbang
+        <h2 class="text-sm font-black">Scan QR Kartu Pelajar di Gerbang</h2>
+        <p class="text-[11px] text-slate-300">Siswa cukup menunjukkan kartu pelajar asli tanpa perlu surat cetak.</p>
+        <button onclick="setScanMode('security'); openScannerModal();" class="w-full bg-emerald-500 active:scale-95 text-slate-950 font-black py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-2">
+          📷 Buka Scanner Gerbang
         </button>
       </div>
 
-      <!-- Siswa Sedang di Luar -->
-      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-        <div class="px-3.5 py-2.5 bg-amber-50 border-b border-amber-100 flex items-center justify-between">
-          <div class="flex items-center gap-2 text-xs font-bold text-amber-900">
-            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-            Sedang di Luar Sekolah
-          </div>
-          <span class="text-[10px] font-black bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full" id="gateCountLabel">0 Siswa</span>
+      <!-- Siswa Sedang Di Luar -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm space-y-2">
+        <div class="flex justify-between items-center border-b pb-2">
+          <span class="text-xs font-bold text-slate-800">Siswa Sedang di Luar</span>
+          <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full" id="countOutside">0 Siswa</span>
         </div>
-        <div id="gateOutsideCardList" class="p-2 space-y-2 divide-y divide-slate-100">
-          <!-- Injected by JS -->
+        <div id="listOutsideContainer" class="space-y-2 text-xs">
+          <p class="text-slate-400 text-center py-4">Tidak ada siswa berizin di luar.</p>
         </div>
       </div>
     </section>
 
-    <!-- ==================== 3. VIEW GURU BK ==================== -->
+    <!-- VIEW 3: GURU BK -->
     <section id="view-bk" class="space-y-3 hidden">
-      <!-- Peringatan Rujukan Konseling -->
       <div class="bg-rose-50 border border-rose-200 rounded-2xl p-3.5 space-y-2">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-1.5">
-            <span class="w-5 h-5 rounded-lg bg-rose-600 text-white font-black text-xs flex items-center justify-center">!</span>
-            <h3 class="text-xs font-bold text-rose-950">Wajib Konseling (&ge; 2x Telat)</h3>
-          </div>
-          <span class="text-[10px] font-bold text-rose-800 bg-rose-200 px-2 py-0.5 rounded-full" id="bkBadgeAlert">0 Siswa</span>
+        <div class="flex justify-between items-center">
+          <h3 class="text-xs font-bold text-rose-950">Perhatian Khusus BK (&ge; 2x Telat)</h3>
+          <span class="text-[10px] bg-rose-200 text-rose-800 font-bold px-2 py-0.5 rounded-full" id="countBK">0 Siswa</span>
         </div>
-        <div id="bkPriorityList" class="space-y-2">
-          <!-- Injected by JS -->
-        </div>
-      </div>
-
-      <!-- Log Histori Konseling -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-3.5 shadow-sm space-y-2.5">
-        <div class="flex items-center justify-between">
-          <h4 class="text-xs font-bold text-slate-800">Histori Pembinaan BK</h4>
-          <button onclick="openBKModal()" class="text-[10px] bg-purple-600 text-white font-bold px-2.5 py-1 rounded-lg">
-            + Catat Kasus
-          </button>
-        </div>
-        <div id="bkHistoryCardList" class="space-y-2">
-          <!-- Injected by JS -->
-        </div>
+        <div id="listBKContainer" class="space-y-2 text-xs"></div>
       </div>
     </section>
 
-    <!-- ==================== 4. VIEW REKAP SPREADSHEET ==================== -->
-    <section id="view-rekap" class="space-y-3 hidden">
-      <div class="bg-emerald-900 text-white p-4 rounded-2xl space-y-2">
-        <h3 class="text-xs font-black uppercase tracking-wider text-emerald-300">Ekspor Data & Laporan</h3>
-        <p class="text-[11px] text-emerald-100">Unduh data harian atau sinkronkan langsung ke Google Sheets sekolah.</p>
-        
-        <button onclick="exportAllToWorkbook()" class="w-full bg-emerald-400 active:scale-98 text-slate-950 font-black py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow">
-          📥 Unduh Buku Kerja Excel (.xlsx)
+    <!-- VIEW 4: PENGATURAN CLOUD URL -->
+    <section id="view-settings" class="space-y-3 hidden">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 shadow-sm">
+        <h3 class="text-xs font-bold text-slate-800">Konfigurasi Google Apps Script URL</h3>
+        <p class="text-[11px] text-slate-500">Tempelkan URL Web App Google Apps Script Anda yang berakhiran <code>/exec</code>:</p>
+        <input type="url" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/AKfycb.../exec" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500">
+        <button onclick="saveScriptUrl()" class="w-full bg-indigo-600 active:scale-95 text-white font-bold py-2.5 rounded-xl text-xs shadow">
+          Simpan URL Web App
         </button>
-      </div>
-
-      <!-- Tombol Ekspor Satuan -->
-      <div class="grid grid-cols-3 gap-2">
-        <button onclick="exportSingleSheet('terlambat')" class="bg-white p-2.5 rounded-xl border border-slate-200 text-center active:scale-95 shadow-sm">
-          <div class="text-base mb-1">📋</div>
-          <div class="text-[10px] font-bold text-slate-700">Excel Telat</div>
-        </button>
-        <button onclick="exportSingleSheet('izin')" class="bg-white p-2.5 rounded-xl border border-slate-200 text-center active:scale-95 shadow-sm">
-          <div class="text-base mb-1">🛡️</div>
-          <div class="text-[10px] font-bold text-slate-700">Excel Gerbang</div>
-        </button>
-        <button onclick="exportSingleSheet('bk')" class="bg-white p-2.5 rounded-xl border border-slate-200 text-center active:scale-95 shadow-sm">
-          <div class="text-base mb-1">🧑‍🏫</div>
-          <div class="text-[10px] font-bold text-slate-700">Excel BK</div>
-        </button>
-      </div>
-
-      <!-- Konfigurasi Google Sheets Webhook -->
-      <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-        <span class="text-xs font-bold text-slate-800 block">Kirim ke Google Sheets Online</span>
-        <input type="url" id="googleSheetsWebhookUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-50 px-3 py-2 rounded-xl text-[11px] border border-slate-200 focus:outline-none focus:border-emerald-500">
-        <div class="flex gap-2">
-          <button onclick="saveGoogleSheetsWebhook()" class="flex-1 bg-slate-100 text-slate-700 font-bold py-2 rounded-xl text-[11px]">
-            Simpan URL
-          </button>
-          <button onclick="syncToGoogleSheetsOnline()" class="flex-1 bg-emerald-600 text-white font-bold py-2 rounded-xl text-[11px] active:scale-95">
-            🚀 Kirim Data
-          </button>
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] space-y-1 text-slate-600">
+          <strong>Catatan Penting Deploy:</strong>
+          <p>&bull; Pastikan <em>Who has access</em> dipilih: <strong>Anyone</strong>.</p>
+          <p>&bull; Pastikan URL berakhiran <strong>/exec</strong> (bukan /edit).</p>
         </div>
-      </div>
-    </section>
-
-    <!-- ==================== 5. VIEW KARTU SISWA ==================== -->
-    <section id="view-kartu" class="space-y-3 hidden">
-      <div class="flex items-center gap-2">
-        <input type="text" id="filterCardInput" oninput="renderStudentCards()" placeholder="Cari nama / kelas..." class="flex-1 bg-white px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500">
-        <button onclick="showAddStudentModal()" class="bg-indigo-600 text-white text-xs font-bold px-3 py-2 rounded-xl shrink-0">
-          + Siswa
-        </button>
-      </div>
-      <div id="studentCardsGrid" class="space-y-2.5">
-        <!-- Injected by JS -->
       </div>
     </section>
 
   </main>
 
-  <!-- ==================== MOBILE BOTTOM NAVIGATION ==================== -->
-  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-2 py-1.5 flex justify-around items-center safe-bottom shadow-lg">
-    <button onclick="switchRole('piket')" id="btn-tab-piket" class="mobile-tab-btn flex flex-col items-center justify-center p-1 text-indigo-600 font-bold text-[10px]">
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-t border-slate-200 px-3 py-2 flex justify-around items-center shadow-lg">
+    <button onclick="switchRole('piket')" id="btn-piket" class="flex flex-col items-center text-indigo-600 font-bold text-[10px]">
       <span class="text-base">📋</span>
       <span>Piket</span>
     </button>
-    <button onclick="switchRole('security')" id="btn-tab-security" class="mobile-tab-btn flex flex-col items-center justify-center p-1 text-slate-400 font-semibold text-[10px]">
+    <button onclick="switchRole('security')" id="btn-security" class="flex flex-col items-center text-slate-400 font-semibold text-[10px]">
       <span class="text-base">🛡️</span>
       <span>Satpam</span>
     </button>
-    <!-- SCAN BUTTON BESAR TENGAH -->
-    <button onclick="openScannerModal('auto')" class="flex flex-col items-center justify-center -mt-5 bg-indigo-600 text-white rounded-full w-12 h-12 shadow-lg border-2 border-white active:scale-90 transition">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
-    </button>
-    <button onclick="switchRole('bk')" id="btn-tab-bk" class="mobile-tab-btn flex flex-col items-center justify-center p-1 text-slate-400 font-semibold text-[10px]">
+    <button onclick="switchRole('bk')" id="btn-bk" class="flex flex-col items-center text-slate-400 font-semibold text-[10px]">
       <span class="text-base">🧑‍🏫</span>
       <span>BK</span>
     </button>
-    <button onclick="switchRole('rekap')" id="btn-tab-rekap" class="mobile-tab-btn flex flex-col items-center justify-center p-1 text-slate-400 font-semibold text-[10px]">
-      <span class="text-base">📊</span>
-      <span>Rekap</span>
-    </button>
-    <button onclick="switchRole('kartu')" id="btn-tab-kartu" class="mobile-tab-btn flex flex-col items-center justify-center p-1 text-slate-400 font-semibold text-[10px]">
-      <span class="text-base">🪪</span>
-      <span>Kartu</span>
+    <button onclick="switchRole('settings')" id="btn-settings" class="flex flex-col items-center text-slate-400 font-semibold text-[10px]">
+      <span class="text-base">⚙️</span>
+      <span>Cloud URL</span>
     </button>
   </nav>
 
-  <!-- ==================== MODAL: FULLSCREEN HP SCANNER ==================== -->
+  <!-- MODAL FULLSCREEN SCANNER -->
   <div id="scannerModal" class="fixed inset-0 z-50 bg-black hidden flex-col">
-    <!-- Scanner Top Bar -->
-    <div class="p-3 bg-black/70 backdrop-blur text-white flex items-center justify-between safe-top">
-      <div class="flex items-center gap-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-        <span class="font-bold text-xs" id="scannerModeTitle">Scanner Kamera HP</span>
-      </div>
-      <button onclick="closeScannerModal()" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-lg font-bold">
-        &times;
-      </button>
+    <div class="p-3 bg-black/70 text-white flex items-center justify-between">
+      <span class="font-bold text-xs" id="scannerTitle">Scanner Kamera HP</span>
+      <button onclick="closeScannerModal()" class="w-8 h-8 rounded-full bg-white/20 text-white text-lg font-bold flex items-center justify-center">&times;</button>
     </div>
-
-    <!-- Viewport Kamera -->
     <div class="relative flex-1 bg-black flex items-center justify-center overflow-hidden">
       <div id="qrReader" class="w-full h-full"></div>
-
-      <!-- Target Laser Ponsel -->
       <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
-        <div class="w-64 h-64 border-2 border-emerald-400/80 rounded-3xl relative shadow-[0_0_25px_rgba(52,211,153,0.3)]">
-          <div class="laser-line absolute left-2 right-2 h-0.5 bg-emerald-400 shadow-[0_0_10px_#34d399]"></div>
+        <div class="w-60 h-60 border-2 border-emerald-400/80 rounded-3xl relative shadow-[0_0_20px_rgba(52,211,153,0.4)]">
+          <div class="scanner-laser absolute left-2 right-2 h-0.5 bg-emerald-400 shadow-[0_0_8px_#34d399]"></div>
         </div>
       </div>
-    </div>
-
-    <!-- Controls Bar HP: Switch Kamera & Flashlight -->
-    <div class="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between gap-2 safe-bottom">
-      <select id="cameraSelect" onchange="switchCameraDevice(this.value)" class="flex-1 bg-slate-800 text-[11px] text-slate-200 py-2 px-2.5 rounded-xl border border-slate-700 focus:outline-none">
-        <option value="">Pilih Kamera</option>
-      </select>
-      <button id="btnTorchToggle" onclick="toggleFlashlight()" class="bg-slate-800 text-slate-200 px-3.5 py-2 rounded-xl text-xs border border-slate-700 active:scale-95 flex items-center gap-1">
-        <span>🔦 Senter</span>
-      </button>
     </div>
   </div>
 
-  <!-- ==================== MODAL BOTTOM-SHEET: FORM CATAT TELAT ==================== -->
-  <div id="lateModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl p-4 space-y-3.5 max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between border-b pb-2">
-        <div class="flex items-center gap-2">
-          <span class="w-7 h-7 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-xs">Telat</span>
-          <h3 class="font-bold text-xs text-slate-800">Catat Keterlambatan</h3>
-        </div>
-        <button onclick="closeModal('lateModal')" class="text-slate-400 text-lg font-black">&times;</button>
+  <!-- MODAL FORM INPUT SISWA TERLAMBAT -->
+  <div id="modalLate" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-end sm:items-center justify-center">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-4 space-y-3 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-2">
+        <span class="text-xs font-bold text-slate-800">Pencatatan Siswa Terlambat</span>
+        <button onclick="closeModal('modalLate')" class="text-lg font-bold text-slate-400">&times;</button>
       </div>
-
-      <!-- Info Siswa -->
-      <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center text-xs" id="lateAvatar">AB</div>
-        <div class="min-w-0 flex-1">
-          <h4 class="font-bold text-xs text-slate-900 truncate" id="lateName">-</h4>
-          <p class="text-[10px] text-slate-500"><span id="lateClass">-</span> &bull; NIS: <span id="lateNIS">-</span></p>
-          <span class="text-[10px] font-bold text-rose-600" id="lateFreqBadge">Keterlambatan ke-1</span>
-        </div>
+      <div class="bg-slate-50 p-2.5 rounded-xl border text-xs">
+        <h4 class="font-bold text-slate-900" id="lateStudentName">-</h4>
+        <p class="text-slate-500" id="lateStudentDetail">-</p>
       </div>
-
-      <!-- Form Inputs -->
       <div class="space-y-2 text-xs">
         <div>
-          <label class="font-semibold text-slate-700 block mb-1">Jam Tiba</label>
-          <input type="text" id="lateTimeInput" readonly class="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold">
-        </div>
-        <div>
-          <label class="font-semibold text-slate-700 block mb-1">Alasan</label>
-          <select id="lateReasonInput" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 bg-white">
+          <label class="font-semibold block mb-1">Alasan Terlambat</label>
+          <select id="lateReason" class="w-full border rounded-xl px-2.5 py-2">
             <option value="Macet di perjalanan">Macet di perjalanan</option>
             <option value="Bangun kesiangan">Bangun kesiangan</option>
             <option value="Kendaraan mogok / ban bocor">Kendaraan mogok / ban bocor</option>
-            <option value="Membantu orang tua dahulu">Membantu urusan keluarga / orang tua</option>
-            <option value="Hujan lebat / cuaca">Hujan lebat / cuaca</option>
-            <option value="Lainnya">Lainnya</option>
+            <option value="Membantu orang tua dahulu">Membantu orang tua dahulu</option>
+            <option value="Hujan lebat di jalan">Hujan lebat di jalan</option>
           </select>
         </div>
         <div>
-          <label class="font-semibold text-slate-700 block mb-1">Sanksi Edukatif</label>
-          <select id="lateSanctionInput" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 bg-white">
-            <option value="Operasi Semut (Kebersihan 10 Menit)">Operasi Semut (Kebersihan 10 Menit)</option>
-            <option value="Literasi / Membaca di Perpustakaan">Literasi Perpustakaan</option>
+          <label class="font-semibold block mb-1">Sanksi Edukatif</label>
+          <select id="lateSanction" class="w-full border rounded-xl px-2.5 py-2">
+            <option value="Operasi Semut (Kebersihan 10 Mnt)">Operasi Semut (Kebersihan 10 Mnt)</option>
+            <option value="Literasi di Perpustakaan">Literasi di Perpustakaan</option>
             <option value="Hormat Bendera & Janji Disiplin">Hormat Bendera & Janji Disiplin</option>
-            <option value="Peringatan Keras + Rujukan BK">Peringatan Keras + Rujukan BK</option>
+            <option value="Rujukan Konseling BK">Rujukan Konseling BK</option>
           </select>
         </div>
-        <div>
-          <label class="font-semibold text-slate-700 block mb-1">Guru Piket</label>
-          <input type="text" id="lateTeacherInput" value="Drs. Bambang H., M.Pd" class="w-full border border-slate-300 rounded-xl px-3 py-2">
-        </div>
       </div>
-
-      <div class="pt-1 flex gap-2">
-        <button onclick="saveLateRecord(true)" class="flex-1 bg-indigo-600 active:scale-95 text-white font-bold py-2.5 rounded-xl text-xs shadow">
-          💾 Simpan & Cetak Slip
-        </button>
-        <button onclick="saveLateRecord(false)" class="bg-slate-100 text-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs">
-          Simpan
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== MODAL BOTTOM-SHEET: BUAT SURAT IZIN ==================== -->
-  <div id="permitModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl p-4 space-y-3 max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between border-b pb-2">
-        <h3 class="font-bold text-xs text-slate-800">Terbitkan Surat Izin Keluar</h3>
-        <button onclick="closeModal('permitModal')" class="text-slate-400 text-lg font-black">&times;</button>
-      </div>
-
-      <div class="space-y-2 text-xs">
-        <div>
-          <label class="font-semibold text-slate-700 block mb-1">Pilih Siswa</label>
-          <select id="permitStudentSelect" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 bg-white">
-            <!-- Injected by JS -->
-          </select>
-        </div>
-        <div>
-          <label class="font-semibold text-slate-700 block mb-1">Jenis Izin</label>
-          <div class="grid grid-cols-2 gap-2">
-            <label class="border rounded-xl p-2 flex items-center gap-1.5 cursor-pointer hover:bg-slate-50">
-              <input type="radio" name="permitType" value="Sementara" checked class="text-amber-600">
-              <span class="text-xs font-bold text-slate-800">Sementara</span>
-            </label>
-            <label class="border rounded-xl p-2 flex items-center gap-1.5 cursor-pointer hover:bg-slate-50">
-              <input type="radio" name="permitType" value="Pulang Terus" class="text-amber-600">
-              <span class="text-xs font-bold text-slate-800">Pulang Terus</span>
-            </label>
-          </div>
-        </div>
-        <div>
-          <label class="font-semibold text-slate-700 block mb-1">Alasan Keluar</label>
-          <select id="permitReasonSelect" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 bg-white mb-1.5">
-            <option value="Sakit (Dianjurkan pulang)">Sakit (Dianjurkan pulang)</option>
-            <option value="Tugas Dinas Sekolah / Lomba">Tugas Dinas Sekolah / Lomba</option>
-            <option value="Keperluan Keluarga Mendesak">Keperluan Keluarga Mendesak</option>
-            <option value="Membeli Perlengkapan Praktik">Membeli Perlengkapan Praktik</option>
-          </select>
-          <input type="text" id="permitNotes" placeholder="Catatan keperluan khusus..." class="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs">
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="font-semibold text-slate-700 block mb-1">Batas Kembali</label>
-            <input type="time" id="permitValidUntil" value="11:30" class="w-full border border-slate-300 rounded-xl px-2 py-2">
-          </div>
-          <div>
-            <label class="font-semibold text-slate-700 block mb-1">Guru Piket</label>
-            <input type="text" id="permitTeacher" value="Drs. Bambang H., M.Pd" class="w-full border border-slate-300 rounded-xl px-2 py-2">
-          </div>
-        </div>
-      </div>
-
-      <button onclick="savePermitRecord()" class="w-full bg-amber-600 active:scale-95 text-white font-bold py-2.5 rounded-xl text-xs shadow">
-        Terbitkan Surat & Buat QR Gerbang
+      <button id="btnSubmitLate" onclick="submitLateRecord()" class="w-full bg-indigo-600 active:scale-95 text-white font-bold py-2.5 rounded-xl text-xs shadow">
+        Kirim ke Spreadsheet Piket
       </button>
     </div>
   </div>
 
-  <!-- ==================== MODAL BOTTOM-SHEET: AKSI GERBANG SECURITY ==================== -->
-  <div id="gateActionModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl p-4 space-y-3">
-      <div class="flex items-center justify-between border-b pb-2">
-        <h3 class="font-bold text-xs text-slate-800">Verifikasi Pos Gerbang</h3>
-        <button onclick="closeModal('gateActionModal')" class="text-slate-400 text-lg font-black">&times;</button>
+  <!-- MODAL FORM IZIN KELUAR -->
+  <div id="modalPermit" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-end sm:items-center justify-center">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-4 space-y-3 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-2">
+        <span class="text-xs font-bold text-slate-800">Terbitkan Izin Keluar Sekolah</span>
+        <button onclick="closeModal('modalPermit')" class="text-lg font-bold text-slate-400">&times;</button>
       </div>
-
-      <div id="gateActionStatusChip" class="p-3 rounded-2xl flex items-center gap-2.5">
-        <!-- Injected by JS -->
+      <div class="space-y-2 text-xs">
+        <div>
+          <label class="font-semibold block mb-1">Pilih Siswa</label>
+          <select id="permitStudentSelect" class="w-full border rounded-xl px-2.5 py-2"></select>
+        </div>
+        <div>
+          <label class="font-semibold block mb-1">Alasan Keluar</label>
+          <select id="permitReason" class="w-full border rounded-xl px-2.5 py-2">
+            <option value="Sakit (Dianjurkan pulang)">Sakit (Dianjurkan pulang)</option>
+            <option value="Tugas Dinas Sekolah / Lomba">Tugas Dinas Sekolah / Lomba</option>
+            <option value="Keperluan Keluarga Mendesak">Keperluan Keluarga Mendesak</option>
+          </select>
+        </div>
+        <div>
+          <label class="font-semibold block mb-1">Batas Jam Kembali</label>
+          <input type="time" id="permitValidUntil" value="11:30" class="w-full border rounded-xl px-2.5 py-2">
+        </div>
       </div>
-
-      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1.5">
-        <div class="flex justify-between"><span class="text-slate-500">Nama Siswa:</span><span class="font-bold text-slate-900" id="gateStudentName">-</span></div>
-        <div class="flex justify-between"><span class="text-slate-500">Kelas / NIS:</span><span class="font-semibold text-slate-700" id="gateStudentClass">-</span></div>
-        <div class="flex justify-between"><span class="text-slate-500">Jenis Izin:</span><span class="font-bold text-amber-700" id="gatePermitType">-</span></div>
-        <div class="flex justify-between"><span class="text-slate-500">Batas Waktu:</span><span class="font-bold text-rose-600" id="gatePermitDeadline">-</span></div>
-      </div>
-
-      <div id="gateActionButtons" class="pt-1">
-        <!-- Injected by JS -->
-      </div>
+      <button id="btnSubmitPermit" onclick="submitPermitRecord()" class="w-full bg-amber-600 active:scale-95 text-white font-bold py-2.5 rounded-xl text-xs shadow">
+        Terbitkan Izin ke Pos Gerbang
+      </button>
     </div>
   </div>
 
-  <!-- PRINT SLIP CONTAINER -->
-  <div id="printArea" class="hidden p-4 bg-white">
-    <div id="printContent"></div>
+  <!-- MODAL SATPAM: VERIFIKASI GERBANG -->
+  <div id="modalGateCheck" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-end sm:items-center justify-center">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-4 space-y-3">
+      <div class="flex justify-between items-center border-b pb-2">
+        <span class="text-xs font-bold text-slate-800">Hasil Verifikasi Gerbang</span>
+        <button onclick="closeModal('modalGateCheck')" class="text-lg font-bold text-slate-400">&times;</button>
+      </div>
+      <div id="gateResultBox" class="p-3 rounded-2xl text-xs space-y-1"></div>
+      <div id="gateActionArea" class="pt-2"></div>
+    </div>
   </div>
 
-  <!-- TOAST NOTIFIKASI PONSEL -->
-  <div id="toastNotification" class="fixed top-14 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-950 text-white p-3 rounded-2xl shadow-xl flex items-center gap-2.5 transform -translate-y-24 opacity-0 transition-all duration-300 border border-slate-800">
+  <!-- TOAST NOTIFIKASI -->
+  <div id="toastNotification" class="fixed top-12 left-4 right-4 z-50 max-w-sm mx-auto bg-slate-900 text-white p-3 rounded-2xl shadow-xl flex items-center gap-2.5 transform -translate-y-24 opacity-0 transition-all duration-300 border border-slate-800">
     <div id="toastIcon" class="w-6 h-6 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-xs shrink-0">✓</div>
     <div class="min-w-0 flex-1">
-      <p class="text-xs font-bold truncate" id="toastTitle">Berhasil</p>
-      <p class="text-[10px] text-slate-300 truncate" id="toastMessage">Operasi selesai.</p>
+      <p class="text-xs font-bold truncate" id="toastTitle">Info</p>
+      <p class="text-[10px] text-slate-300 truncate" id="toastMessage">Pesan.</p>
     </div>
   </div>
 
-  <!-- JAVASCRIPT APLIKASI -->
+  <!-- LOGIKA JAVASCRIPT LENGKAP -->
   <script>
-    // Sintesis Suara & Getaran Ponsel
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playBeep(freq = 880, duration = 0.15) {
-      try {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-      } catch (e) {}
-    }
-    function triggerHaptic() {
-      if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
-    }
-
-    // STATE DATABASE LOKAL
-    let students = [
-      { nis: "202601", name: "Muhammad Rizky Pratama", class: "XII MIPA 1", lateCount: 3, points: 15 },
-      { nis: "202602", name: "Alya Zahra Ramadhani", class: "XI IPS 2", lateCount: 1, points: 5 },
-      { nis: "202603", name: "Bagas Surya Saputra", class: "X TKJ 1", lateCount: 2, points: 10 },
-      { nis: "202604", name: "Chelsea Olivia Dewi", class: "XI MIPA 3", lateCount: 0, points: 0 },
-      { nis: "202605", name: "Dimas Anggara Wahyudi", class: "XII Akuntansi", lateCount: 4, points: 20 }
+    // Database Siswa Lokal SMAN 1 Muncar
+    const studentDB = [
+      { nis: "202601", name: "Muhammad Rizky Pratama", class: "XII MIPA 1", lateCount: 2 },
+      { nis: "202602", name: "Alya Zahra Ramadhani", class: "XI IPS 2", lateCount: 1 },
+      { nis: "202603", name: "Bagas Surya Saputra", class: "X TKJ 1", lateCount: 2 },
+      { nis: "202604", name: "Chelsea Olivia Dewi", class: "XI MIPA 3", lateCount: 0 },
+      { nis: "202605", name: "Dimas Anggara Wahyudi", class: "XII Akuntansi", lateCount: 3 }
     ];
 
-    let lateRecords = [
-      { id: "LTR-001", nis: "202601", time: "07:18 WIB", reason: "Macet di perjalanan", sanction: "Operasi Semut (Kebersihan)", teacher: "Drs. Bambang H.", date: "28 Sep 2026" },
-      { id: "LTR-002", nis: "202603", time: "07:22 WIB", reason: "Ban motor bocor", sanction: "Literasi Perpustakaan", teacher: "Drs. Bambang H.", date: "28 Sep 2026" }
-    ];
-
-    let permitRecords = [
-      { id: "IZN-001", nis: "202602", type: "Sementara", reason: "Tugas Lomba Sekolah", issuedAt: "08:30 WIB", validUntil: "11:30", teacher: "Drs. Bambang H.", status: "Di Luar Sekolah", exitTime: "08:35 WIB", returnTime: null }
-    ];
-
-    let bkRecords = [
-      { id: "BK-101", nis: "202605", date: "26 Sep 2026", topic: "Keterlambatan Berulang Ke-4", notes: "Siswa berjanji tidak tidur larut malam.", counselor: "Dra. Hj. Nurhayati", status: "Selesai" }
-    ];
-
+    let lateHistory = [];
+    let permitCache = [];
     let currentRole = "piket";
-    let activeScanner = null;
-    let isScannerBusy = false;
-    let selectedCamId = null;
-    let isTorchActive = false;
-    let tempStudent = null;
+    let scanMode = "piket-late";
+    let html5QrScanner = null;
+    let selectedStudent = null;
+    let scriptURL = localStorage.getItem("simpatikScriptURL") || "";
 
-    // GANTI TAMPILAN PERAN
+    function setScanMode(mode) { scanMode = mode; }
+
     function switchRole(role) {
       currentRole = role;
-
-      // Update Nav Buttons
-      document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
-        btn.classList.remove('text-indigo-600', 'text-emerald-600', 'text-purple-600', 'font-bold');
-        btn.classList.add('text-slate-400', 'font-semibold');
-      });
-      const activeBtn = document.getElementById(`btn-tab-${role}`);
-      if (activeBtn) {
-        if (role === 'security' || role === 'rekap') activeBtn.classList.add('text-emerald-600', 'font-bold');
-        else if (role === 'bk') activeBtn.classList.add('text-purple-600', 'font-bold');
-        else activeBtn.classList.add('text-indigo-600', 'font-bold');
-        activeBtn.classList.remove('text-slate-400', 'font-semibold');
-      }
-
-      ['piket', 'security', 'bk', 'rekap', 'kartu'].forEach(v => {
-        document.getElementById(`view-${v}`).classList.add('hidden');
-      });
+      ['piket', 'security', 'bk', 'settings'].forEach(r => document.getElementById(`view-${r}`).classList.add('hidden'));
       document.getElementById(`view-${role}`).classList.remove('hidden');
 
-      const roleLabels = { piket: "Guru Piket", security: "Security Gerbang", bk: "Guru BK", rekap: "Rekap Spreadsheet", kartu: "Kartu QR Siswa" };
-      document.getElementById('roleBadgeLabel').textContent = `Peran: ${roleLabels[role]}`;
-
-      if (role === 'piket') renderPiketView();
-      else if (role === 'security') renderSecurityView();
-      else if (role === 'bk') renderBKView();
-      else if (role === 'kartu') renderStudentCards();
-    }
-
-    // PIKET VIEW
-    function renderPiketView() {
-      const lateContainer = document.getElementById('piketLateContainer');
-      lateContainer.innerHTML = "";
-
-      if (lateRecords.length === 0) {
-        lateContainer.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 bg-white rounded-2xl border">Belum ada murid terlambat hari ini.</div>`;
-      } else {
-        lateRecords.forEach(r => {
-          const st = students.find(s => s.nis === r.nis) || { name: "-", class: "-" };
-          const card = document.createElement('div');
-          card.className = "bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between gap-2";
-          card.innerHTML = `
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-1.5">
-                <span class="font-bold text-xs text-slate-900 truncate">${st.name}</span>
-                <span class="text-[10px] text-indigo-700 font-semibold">(${st.class})</span>
-              </div>
-              <p class="text-[10px] text-slate-500 mt-0.5">${r.time} &bull; ${r.reason}</p>
-              <span class="inline-block mt-1 text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">${r.sanction}</span>
-            </div>
-            <button onclick="printLateSlip('${r.id}')" class="bg-indigo-50 active:scale-95 text-indigo-700 font-bold text-[10px] px-2.5 py-1.5 rounded-xl border border-indigo-100 shrink-0">
-              🖨️ Slip
-            </button>
-          `;
-          lateContainer.appendChild(card);
-        });
+      document.querySelectorAll('nav button').forEach(b => {
+        b.classList.remove('text-indigo-600', 'text-emerald-600', 'font-bold');
+        b.classList.add('text-slate-400', 'font-semibold');
+      });
+      const activeBtn = document.getElementById(`btn-${role}`);
+      if (activeBtn) {
+        activeBtn.classList.add(role === 'security' ? 'text-emerald-600' : 'text-indigo-600', 'font-bold');
+        activeBtn.classList.remove('text-slate-400');
       }
 
-      const permitContainer = document.getElementById('piketPermitContainer');
-      permitContainer.innerHTML = "";
-      permitRecords.forEach(p => {
-        const st = students.find(s => s.nis === p.nis) || { name: "-", class: "-" };
-        const card = document.createElement('div');
-        card.className = "bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between gap-2";
-        card.innerHTML = `
-          <div class="min-w-0 flex-1">
-            <span class="font-bold text-xs text-slate-900 truncate block">${st.name}</span>
-            <p class="text-[10px] text-amber-700 font-semibold">${p.type} &bull; Batas ${p.validUntil} WIB</p>
-            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full ${p.status === 'Di Luar Sekolah' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">${p.status}</span>
-          </div>
-          <button onclick="printPermitSlip('${p.id}')" class="bg-amber-50 active:scale-95 text-amber-800 font-bold text-[10px] px-2.5 py-1.5 rounded-xl border border-amber-100 shrink-0">
-            QR Izin
-          </button>
-        `;
-        permitContainer.appendChild(card);
-      });
+      const labels = { piket: "Guru Piket", security: "Security Gerbang", bk: "Guru BK", settings: "Cloud URL" };
+      document.getElementById('roleLabel').textContent = `Peran: ${labels[role]}`;
 
-      updateCounters();
+      if (role === 'bk') renderBKView();
+      if (role === 'security') renderOutsideList();
     }
 
-    function switchPiketTab(tab) {
-      const isLate = tab === 'lateList';
-      document.getElementById('piketLateContainer').classList.toggle('hidden', !isLate);
-      document.getElementById('piketPermitContainer').classList.toggle('hidden', isLate);
-
-      document.getElementById('tabBtnLate').className = isLate ? "flex-1 py-1.5 rounded-lg bg-white text-indigo-700 shadow-sm" : "flex-1 py-1.5 rounded-lg text-slate-600";
-      document.getElementById('tabBtnPermit').className = !isLate ? "flex-1 py-1.5 rounded-lg bg-white text-amber-700 shadow-sm" : "flex-1 py-1.5 rounded-lg text-slate-600";
-    }
-
-    // SECURITY GERBANG VIEW
-    function renderSecurityView() {
-      const list = document.getElementById('gateOutsideCardList');
-      list.innerHTML = "";
-      const outside = permitRecords.filter(p => p.status === "Di Luar Sekolah");
-      document.getElementById('gateCountLabel').textContent = `${outside.length} Siswa`;
-
-      if (outside.length === 0) {
-        list.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Tidak ada siswa berizin di luar lingkungan sekolah.</div>`;
-      } else {
-        outside.forEach(p => {
-          const st = students.find(s => s.nis === p.nis) || { name: "-", class: "-" };
-          const item = document.createElement('div');
-          item.className = "p-2 flex items-center justify-between gap-2";
-          item.innerHTML = `
-            <div class="min-w-0 flex-1">
-              <span class="font-bold text-xs text-slate-900 truncate block">${st.name} (${st.class})</span>
-              <p class="text-[10px] text-amber-700">Keluar: ${p.exitTime} &bull; Batas: ${p.validUntil}</p>
-            </div>
-            <button onclick="securityCheckIn('${p.id}')" class="bg-emerald-600 active:scale-95 text-white font-bold text-[10px] px-3 py-1.5 rounded-xl shrink-0">
-              Kembali
-            </button>
-          `;
-          list.appendChild(item);
-        });
-      }
-    }
-
-    // BK VIEW
-    function renderBKView() {
-      const needBK = students.filter(s => s.lateCount >= 2);
-      document.getElementById('bkBadgeAlert').textContent = `${needBK.length} Siswa`;
-
-      const pList = document.getElementById('bkPriorityList');
-      pList.innerHTML = "";
-      needBK.forEach(st => {
-        const row = document.createElement('div');
-        row.className = "bg-white p-2.5 rounded-xl border border-rose-200 flex items-center justify-between gap-2";
-        row.innerHTML = `
-          <div class="min-w-0 flex-1">
-            <span class="font-bold text-xs text-slate-900 block truncate">${st.name}</span>
-            <span class="text-[10px] text-rose-600 font-bold">${st.lateCount}x Terlambat &bull; ${st.class}</span>
-          </div>
-          <button onclick="openBKModalForStudent('${st.nis}')" class="bg-purple-600 active:scale-95 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-xl">
-            Konseling
-          </button>
-        `;
-        pList.appendChild(row);
-      });
-
-      const hList = document.getElementById('bkHistoryCardList');
-      hList.innerHTML = "";
-      bkRecords.forEach(b => {
-        const st = students.find(s => s.nis === b.nis) || { name: "-", class: "-" };
-        const card = document.createElement('div');
-        card.className = "p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1 text-xs";
-        card.innerHTML = `
-          <div class="flex justify-between items-center">
-            <span class="font-bold text-slate-800">${st.name}</span>
-            <span class="text-[9px] text-slate-400 font-mono">${b.date}</span>
-          </div>
-          <p class="text-[10px] text-purple-700 font-semibold">${b.topic}</p>
-          <p class="text-[10px] text-slate-600">${b.notes}</p>
-        `;
-        hList.appendChild(card);
-      });
-    }
-
-    // SCANNER LOGIC SMARTPHONE
-    async function openScannerModal(mode) {
+    // SCANNER PONSEL
+    async function openScannerModal() {
       document.getElementById('scannerModal').classList.remove('hidden');
       document.getElementById('scannerModal').classList.add('flex');
-      document.getElementById('scannerModeTitle').textContent = mode === 'security' ? 'Security: Scan QR Izin' : 'Piket: Scan Kartu Siswa';
+      document.getElementById('scannerTitle').textContent = scanMode === 'security' ? "Scan Kartu Siswa di Gerbang" : "Scan Kartu Siswa Piket";
 
+      if (!html5QrScanner) html5QrScanner = new Html5Qrcode("qrReader");
       try {
-        if (!activeScanner) activeScanner = new Html5Qrcode("qrReader");
-        await loadCameras();
-
-        const config = { fps: 15, qrbox: { width: 220, height: 220 }, aspectRatio: 1.0 };
-        const camConfig = selectedCamId ? selectedCamId : { facingMode: { ideal: "environment" } };
-
-        await activeScanner.start(camConfig, config, (decoded) => {
-          handleDecodedResult(decoded);
-        }, () => {});
+        await html5QrScanner.start(
+          { facingMode: { ideal: "environment" } },
+          { fps: 15, qrbox: { width: 220, height: 220 } },
+          (decoded) => handleScannedData(decoded),
+          () => {}
+        );
       } catch (e) {
         console.warn("Kamera kendala:", e);
-      }
-    }
-
-    async function loadCameras() {
-      try {
-        const cams = await Html5Qrcode.getCameras();
-        const select = document.getElementById('cameraSelect');
-        if (select && cams.length > 0) {
-          select.innerHTML = "";
-          cams.forEach((c, i) => {
-            const isBack = c.label.toLowerCase().includes('back') || i === 0;
-            const opt = document.createElement('option');
-            opt.value = c.id;
-            opt.textContent = c.label || `Kamera ${i+1} (${isBack ? 'Belakang' : 'Depan'})`;
-            if (isBack && !selectedCamId) selectedCamId = c.id;
-            select.appendChild(opt);
-          });
-        }
-      } catch (e) {}
-    }
-
-    async function switchCameraDevice(id) {
-      if (!id || id === selectedCamId) return;
-      selectedCamId = id;
-      await safelyStopScanner();
-      await openScannerModal(currentRole);
-    }
-
-    async function toggleFlashlight() {
-      if (!activeScanner) return;
-      try {
-        isTorchActive = !isTorchActive;
-        await activeScanner.applyVideoConstraints({ advanced: [{ torch: isTorchActive }] });
-      } catch (e) {
-        showToast("Senter", "Senter tidak didukung kamera ini.", "error");
-      }
-    }
-
-    async function safelyStopScanner() {
-      if (activeScanner && activeScanner.isScanning) {
-        try { await activeScanner.stop(); } catch (e) {}
       }
     }
 
     async function closeScannerModal() {
       document.getElementById('scannerModal').classList.add('hidden');
       document.getElementById('scannerModal').classList.remove('flex');
-      await safelyStopScanner();
+      if (html5QrScanner && html5QrScanner.isScanning) {
+        try { await html5QrScanner.stop(); } catch (e) {}
+      }
     }
 
-    function handleDecodedResult(decoded) {
-      playBeep(920);
-      triggerHaptic();
+    function handleScannedData(text) {
+      if (navigator.vibrate) navigator.vibrate(60);
       closeScannerModal();
 
-      if (decoded.startsWith('SISWA:')) {
-        const nis = decoded.replace('SISWA:', '').trim();
-        processStudentNIS(nis);
-      } else if (decoded.startsWith('IZIN:')) {
-        const id = decoded.replace('IZIN:', '').trim();
-        processPermitQR(id);
+      const cleanNIS = text.replace('SISWA:', '').replace('IZIN:', '').trim();
+      const student = studentDB.find(s => s.nis === cleanNIS);
+
+      if (!student) {
+        showToast("Tidak Ditemukan", `NIS "${cleanNIS}" belum terdaftar.`, "error");
+        return;
+      }
+
+      selectedStudent = student;
+
+      if (scanMode === 'security') {
+        processGateCheck(student);
       } else {
-        processStudentNIS(decoded.trim());
+        openLateModal(student);
       }
     }
 
-    function processStudentNIS(nis) {
-      const st = students.find(s => s.nis === nis);
-      if (!st) {
-        showToast("Tidak Ditemukan", `NIS ${nis} belum terdaftar.`, "error");
-        return;
-      }
-      tempStudent = st;
-
-      if (currentRole === 'security') {
-        const activeP = permitRecords.find(p => p.nis === st.nis && p.status === "Di Luar Sekolah");
-        if (activeP) showGateActionModal(activeP);
-        else showToast("Gerbang", `${st.name} tidak memiliki surat izin keluar aktif!`, "error");
-      } else {
+    function searchStudentManual(type) {
+      const q = document.getElementById('piketManualInput').value.trim();
+      if (!q) return;
+      const st = studentDB.find(s => s.nis === q || s.name.toLowerCase().includes(q.toLowerCase()));
+      if (st) {
+        selectedStudent = st;
         openLateModal(st);
+      } else {
+        showToast("Pencarian", "Siswa tidak ditemukan", "error");
       }
     }
 
-    function processPermitQR(permitId) {
-      const p = permitRecords.find(item => item.id === permitId);
-      if (!p) {
-        showToast("Izin Invalid", "Kode surat tidak ditemukan.", "error");
-        return;
-      }
-      showGateActionModal(p);
-    }
-
-    // FORM TRANSAKSI
+    // TRANSAKSI TERLAMBAT
     function openLateModal(st) {
-      tempStudent = st;
-      document.getElementById('lateName').textContent = st.name;
-      document.getElementById('lateClass').textContent = st.class;
-      document.getElementById('lateNIS').textContent = st.nis;
-      document.getElementById('lateAvatar').textContent = st.name.split(' ').map(n=>n[0]).slice(0,2).join('');
+      document.getElementById('lateStudentName').textContent = st.name;
+      document.getElementById('lateStudentDetail').textContent = `${st.class} \u2022 NIS: ${st.nis}`;
+      openModal('modalLate');
+    }
 
-      const count = st.lateCount + 1;
-      document.getElementById('lateFreqBadge').textContent = `Keterlambatan ke-${count}`;
-      if (count >= 2) {
-        document.getElementById('lateFreqBadge').textContent += " (Rujukan BK)";
-      }
+    async function submitLateRecord() {
+      if (!selectedStudent) return;
+      const btn = document.getElementById('btnSubmitLate');
+      btn.disabled = true;
+      btn.textContent = "Mengirim ke Cloud...";
 
       const now = new Date();
-      document.getElementById('lateTimeInput').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} WIB`;
-      openModal('lateModal');
-    }
-
-    function saveLateRecord(shouldPrint = false) {
-      if (!tempStudent) return;
-      tempStudent.lateCount += 1;
-
-      const record = {
-        id: `LTR-${Date.now().toString().slice(-4)}`,
-        nis: tempStudent.nis,
-        time: document.getElementById('lateTimeInput').value,
-        reason: document.getElementById('lateReasonInput').value,
-        sanction: document.getElementById('lateSanctionInput').value,
-        teacher: document.getElementById('lateTeacherInput').value,
-        date: "28 Sep 2026"
+      const payload = {
+        action: "ADD_LATE",
+        id: "LTR-" + Date.now().toString().slice(-4),
+        date: now.toLocaleDateString('id-ID'),
+        time: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + " WIB",
+        nis: selectedStudent.nis,
+        name: selectedStudent.name,
+        className: selectedStudent.class,
+        reason: document.getElementById('lateReason').value,
+        sanction: document.getElementById('lateSanction').value,
+        teacher: "Drs. Bambang H."
       };
 
-      lateRecords.unshift(record);
-      closeModal('lateModal');
-      renderPiketView();
-      renderBKView();
-      showToast("Tersimpan", `Keterlambatan ${tempStudent.name} tercatat.`);
-      if (shouldPrint) printLateSlip(record.id);
+      selectedStudent.lateCount = (selectedStudent.lateCount || 0) + 1;
+      lateHistory.unshift(payload);
+      renderLateList();
+      closeModal('modalLate');
+
+      await sendToSpreadsheet(payload);
+
+      btn.disabled = false;
+      btn.textContent = "Kirim ke Spreadsheet Piket";
+      showToast("Berhasil", `Keterlambatan ${selectedStudent.name} tersimpan.`);
     }
 
+    function renderLateList() {
+      const c = document.getElementById('listLateContainer');
+      c.innerHTML = "";
+      document.getElementById('countLate').textContent = `${lateHistory.length} Siswa`;
+      lateHistory.forEach(l => {
+        c.innerHTML += `
+          <div class="py-2">
+            <div class="font-bold text-slate-800">${l.name} (${l.className})</div>
+            <div class="text-[10px] text-slate-500">${l.time} &bull; ${l.reason}</div>
+            <span class="inline-block mt-0.5 text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">${l.sanction}</span>
+          </div>
+        `;
+      });
+    }
+
+    // TRANSAKSI IZIN KELUAR (PAPERLESS)
     function openPermitModal() {
       const sel = document.getElementById('permitStudentSelect');
       sel.innerHTML = "";
-      students.forEach(s => {
-        sel.innerHTML += `<option value="${s.nis}">${s.name} (${s.class})</option>`;
-      });
-      openModal('permitModal');
+      studentDB.forEach(s => sel.innerHTML += `<option value="${s.nis}">${s.name} (${s.class})</option>`);
+      openModal('modalPermit');
     }
 
-    function savePermitRecord() {
+    async function submitPermitRecord() {
       const nis = document.getElementById('permitStudentSelect').value;
-      const type = document.querySelector('input[name="permitType"]:checked')?.value || "Sementara";
-      const now = new Date();
+      const st = studentDB.find(s => s.nis === nis);
+      const btn = document.getElementById('btnSubmitPermit');
+      btn.disabled = true;
+      btn.textContent = "Menerbitkan Izin...";
 
-      const newPermit = {
-        id: `IZN-${Date.now().toString().slice(-4)}`,
-        nis: nis,
-        type: type,
-        reason: document.getElementById('permitReasonSelect').value,
-        issuedAt: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} WIB`,
+      const now = new Date();
+      const payload = {
+        action: "ADD_PERMIT",
+        permitId: "IZN-" + Date.now().toString().slice(-4),
+        date: now.toLocaleDateString('id-ID'),
+        nis: st.nis,
+        name: st.name,
+        className: st.class,
+        type: "Izin Sementara",
+        reason: document.getElementById('permitReason').value,
+        issuedAt: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + " WIB",
         validUntil: document.getElementById('permitValidUntil').value,
-        teacher: document.getElementById('permitTeacher').value,
-        status: "Menunggu di Gerbang",
-        exitTime: null,
-        returnTime: null
+        teacher: "Drs. Bambang H."
       };
 
-      permitRecords.unshift(newPermit);
-      closeModal('permitModal');
-      renderPiketView();
-      showToast("Izin Terbit", "Surat izin siap divalidasi security.");
-      printPermitSlip(newPermit.id);
+      permitCache.push({ ...payload, status: "MENUNGGU_GERBANG", exitTime: "-", returnTime: "-" });
+      closeModal('modalPermit');
+
+      await sendToSpreadsheet(payload);
+
+      btn.disabled = false;
+      btn.textContent = "Terbitkan Izin ke Pos Gerbang";
+      showToast("Izin Terbit", `${st.name} siap diverifikasi di gerbang.`);
     }
 
-    function showGateActionModal(permit) {
-      const st = students.find(s => s.nis === permit.nis) || { name: "-", class: "-" };
-      document.getElementById('gateStudentName').textContent = st.name;
-      document.getElementById('gateStudentClass').textContent = `${st.class} (${st.nis})`;
-      document.getElementById('gatePermitType').textContent = permit.type;
-      document.getElementById('gatePermitDeadline').textContent = `${permit.validUntil} WIB`;
+    // VERIFIKASI GERBANG
+    function processGateCheck(st) {
+      const box = document.getElementById('gateResultBox');
+      const action = document.getElementById('gateActionArea');
 
-      const chip = document.getElementById('gateActionStatusChip');
-      const btnBox = document.getElementById('gateActionButtons');
+      const activePermit = permitCache.find(p => p.nis === st.nis && (p.status === "MENUNGGU_GERBANG" || p.status === "DI_LUAR"));
 
-      if (permit.status === "Menunggu di Gerbang") {
-        chip.className = "p-2.5 rounded-xl bg-amber-100 text-amber-900 font-bold text-xs";
-        chip.textContent = "Surat Izin Resmi - Siap Keluar";
-        btnBox.innerHTML = `
-          <button onclick="confirmExit('${permit.id}')" class="w-full bg-amber-600 active:scale-95 text-white font-bold py-2.5 rounded-xl text-xs shadow">
-            🚪 Konfirmasi Siswa KELUAR
+      if (!activePermit) {
+        box.className = "p-3 rounded-2xl text-xs space-y-1 bg-rose-100 text-rose-900 border border-rose-200";
+        box.innerHTML = `
+          <div class="font-bold text-sm">🚫 DILARANG KELUAR!</div>
+          <div>Nama: <strong>${st.name}</strong> (${st.class})</div>
+          <div class="text-[10px]">Siswa tidak memiliki izin keluar aktif dari Guru Piket.</div>
+        `;
+        action.innerHTML = `<button onclick="closeModal('modalGateCheck')" class="w-full bg-slate-800 text-white font-bold py-2 rounded-xl text-xs">Tutup & Tolak</button>`;
+      } else if (activePermit.status === "MENUNGGU_GERBANG") {
+        box.className = "p-3 rounded-2xl text-xs space-y-1 bg-emerald-100 text-emerald-900 border border-emerald-200";
+        box.innerHTML = `
+          <div class="font-bold text-sm">✅ IZIN RESMI DISETUJUI</div>
+          <div>Nama: <strong>${st.name}</strong> (${st.class})</div>
+          <div>Alasan: ${activePermit.reason}</div>
+          <div>Batas Kembali: <strong>${activePermit.validUntil} WIB</strong></div>
+        `;
+        action.innerHTML = `
+          <button onclick="confirmGate('${st.nis}', 'CONFIRM_EXIT')" class="w-full bg-emerald-600 active:scale-95 text-white font-bold py-2.5 rounded-xl text-xs shadow">
+            🚪 Konfirmasi Siswa KELUAR Gerbang
           </button>
         `;
-      } else if (permit.status === "Di Luar Sekolah") {
-        chip.className = "p-2.5 rounded-xl bg-blue-100 text-blue-900 font-bold text-xs";
-        chip.textContent = "Siswa Sedang di Luar";
-        btnBox.innerHTML = `
-          <button onclick="securityCheckIn('${permit.id}')" class="w-full bg-emerald-600 active:scale-95 text-white font-bold py-2.5 rounded-xl text-xs shadow">
-            ✅ Konfirmasi Siswa KEMBALI
+      } else if (activePermit.status === "DI_LUAR") {
+        box.className = "p-3 rounded-2xl text-xs space-y-1 bg-blue-100 text-blue-900 border border-blue-200";
+        box.innerHTML = `
+          <div class="font-bold text-sm">⏱️ KONFIRMASI KEMBALI</div>
+          <div>Nama: <strong>${st.name}</strong> (${st.class})</div>
+          <div>Batas Waktu: ${activePermit.validUntil} WIB</div>
+        `;
+        action.innerHTML = `
+          <button onclick="confirmGate('${st.nis}', 'CONFIRM_RETURN')" class="w-full bg-indigo-600 active:scale-95 text-white font-bold py-2.5 rounded-xl text-xs shadow">
+            ✅ Konfirmasi Siswa KEMBALI Masuk
           </button>
         `;
       }
-      openModal('gateActionModal');
+
+      openModal('modalGateCheck');
     }
 
-    function confirmExit(id) {
-      const p = permitRecords.find(item => item.id === id);
-      if (!p) return;
+    async function confirmGate(nis, gateAction) {
       const now = new Date();
-      p.status = "Di Luar Sekolah";
-      p.exitTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} WIB`;
-      closeModal('gateActionModal');
-      renderSecurityView();
-      renderPiketView();
-      showToast("Gerbang", "Siswa tercatat keluar.");
-    }
+      const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + " WIB";
+      const p = permitCache.find(item => item.nis === nis && (item.status === "MENUNGGU_GERBANG" || item.status === "DI_LUAR"));
 
-    function securityCheckIn(id) {
-      const p = permitRecords.find(item => item.id === id);
-      if (!p) return;
-      const now = new Date();
-      p.status = "Selesai";
-      p.returnTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} WIB`;
-      closeModal('gateActionModal');
-      renderSecurityView();
-      renderPiketView();
-      showToast("Gerbang", "Siswa telah kembali masuk.");
-    }
-
-    // EXPORT EXCEL
-    function exportSingleSheet(cat) {
-      let data = [];
-      if (cat === 'terlambat') {
-        data = lateRecords.map(r => {
-          const st = students.find(s => s.nis === r.nis) || { name: "-", class: "-" };
-          return { "Waktu": r.time, "NIS": r.nis, "Nama": st.name, "Kelas": st.class, "Alasan": r.reason, "Sanksi": r.sanction };
-        });
-      } else if (cat === 'izin') {
-        data = permitRecords.map(p => {
-          const st = students.find(s => s.nis === p.nis) || { name: "-", class: "-" };
-          return { "Kode": p.id, "Nama": st.name, "Kelas": st.class, "Jenis": p.type, "Keluar": p.exitTime || "-", "Kembali": p.returnTime || "-", "Status": p.status };
-        });
-      } else if (cat === 'bk') {
-        data = bkRecords.map(b => {
-          const st = students.find(s => s.nis === b.nis) || { name: "-", class: "-" };
-          return { "Tanggal": b.date, "Nama": st.name, "Topik": b.topic, "Catatan": b.notes, "Konselor": b.counselor };
-        });
+      if (p) {
+        if (gateAction === "CONFIRM_EXIT") {
+          p.status = "DI_LUAR";
+          p.exitTime = timeStr;
+        } else {
+          p.status = "KEMBALI";
+          p.returnTime = timeStr;
+        }
       }
 
-      if (data.length === 0) return showToast("Kosong", "Data belum tersedia.", "error");
+      closeModal('modalGateCheck');
+      renderOutsideList();
 
-      const ws = XLSX.utils.json_to_sheet(data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, cat.toUpperCase());
-      XLSX.writeFile(wb, `Laporan_${cat}_SIMPATIK.xlsx`);
-      showToast("Diunduh", "File Excel berhasil disimpan.");
-    }
+      await sendToSpreadsheet({
+        action: "UPDATE_GATE_STATUS",
+        nis: nis,
+        gateAction: gateAction,
+        time: timeStr
+      });
 
-    function exportAllToWorkbook() {
-      const wb = XLSX.utils.book_new();
-      const wsLate = XLSX.utils.json_to_sheet(lateRecords);
-      const wsPermit = XLSX.utils.json_to_sheet(permitRecords);
-      XLSX.utils.book_append_sheet(wb, wsLate, "TERLAMBAT");
-      XLSX.utils.book_append_sheet(wb, wsPermit, "IZIN_GERBANG");
-      XLSX.writeFile(wb, "SIMPATIK_Lengkap_SMAN1Muncar.xlsx");
-      showToast("Buku Kerja", "Buku kerja lengkap Excel diunduh.");
+      showToast("Gerbang", gateAction === "CONFIRM_EXIT" ? "Siswa tercatat keluar." : "Siswa kembali masuk.");
     }
 
-    // HELPER CETAK SLIP
-    function printLateSlip(id) {
-      const r = lateRecords.find(item => item.id === id);
-      const st = students.find(s => s.nis === r.nis);
-      document.getElementById('printContent').innerHTML = `
-        <div style="border:2px dashed #000; padding:15px; max-width:320px; font-family:sans-serif; font-size:11px;">
-          <h4 style="text-align:center; margin:0 0 6px;">SLIP IZIN MASUK KELAS</h4>
-          <p style="margin:2px 0;"><strong>Nama:</strong> ${st.name}</p>
-          <p style="margin:2px 0;"><strong>Kelas:</strong> ${st.class} (${st.nis})</p>
-          <p style="margin:2px 0;"><strong>Jam Datang:</strong> ${r.time}</p>
-          <p style="margin:2px 0;"><strong>Sanksi:</strong> ${r.sanction}</p>
-          <br><p style="text-align:right;">Piket: ${r.teacher}</p>
-        </div>
-      `;
-      window.print();
+    function renderOutsideList() {
+      const c = document.getElementById('listOutsideContainer');
+      const outside = permitCache.filter(p => p.status === "DI_LUAR");
+      document.getElementById('countOutside').textContent = `${outside.length} Siswa`;
+
+      if (outside.length === 0) {
+        c.innerHTML = `<p class="text-slate-400 text-center py-4">Tidak ada siswa berizin di luar.</p>`;
+      } else {
+        c.innerHTML = "";
+        outside.forEach(p => {
+          c.innerHTML += `
+            <div class="p-2.5 bg-slate-50 border rounded-xl flex justify-between items-center">
+              <div>
+                <strong class="block text-slate-800">${p.name}</strong>
+                <span class="text-[10px] text-amber-700">Keluar: ${p.exitTime} | Batas: ${p.validUntil}</span>
+              </div>
+              <button onclick="setScanMode('security'); openScannerModal();" class="text-[10px] bg-emerald-600 text-white font-bold px-2 py-1 rounded-lg">Scan Masuk</button>
+            </div>
+          `;
+        });
+      }
     }
 
-    function printPermitSlip(id) {
-      const p = permitRecords.find(item => item.id === id);
-      const st = students.find(s => s.nis === p.nis);
-      document.getElementById('printContent').innerHTML = `
-        <div style="border:2px solid #000; padding:15px; max-width:320px; font-family:sans-serif; font-size:11px;">
-          <h4 style="text-align:center; margin:0 0 6px;">SURAT IZIN KELUAR SEKOLAH</h4>
-          <p style="margin:2px 0;"><strong>Nama:</strong> ${st.name} (${st.class})</p>
-          <p style="margin:2px 0;"><strong>Alasan:</strong> ${p.reason}</p>
-          <p style="margin:2px 0;"><strong>Batas Jam:</strong> ${p.validUntil} WIB</p>
-          <div id="printSpot" style="text-align:center; margin:10px 0;"></div>
-        </div>
-      `;
-      new QRCode(document.getElementById('printSpot'), { text: `IZIN:${p.id}`, width: 80, height: 80 });
-      setTimeout(() => window.print(), 300);
+    function renderBKView() {
+      const needBK = studentDB.filter(s => s.lateCount >= 2);
+      document.getElementById('countBK').textContent = `${needBK.length} Siswa`;
+      const container = document.getElementById('listBKContainer');
+      container.innerHTML = "";
+      needBK.forEach(st => {
+        container.innerHTML += `
+          <div class="bg-white p-2.5 rounded-xl border border-rose-200 flex justify-between items-center">
+            <div>
+              <strong class="block text-slate-800">${st.name}</strong>
+              <span class="text-[10px] text-rose-600 font-bold">${st.lateCount}x Terlambat &bull; ${st.class}</span>
+            </div>
+            <span class="text-[9px] bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold">Wajib Konseling</span>
+          </div>
+        `;
+      });
     }
 
-    // MODAL & TOAST
-    function openModal(id) {
-      const el = document.getElementById(id);
-      el.classList.remove('hidden');
-      el.classList.add('flex');
+    // PENGIRIMAN DATA KE GOOGLE APPS SCRIPT
+    async function sendToSpreadsheet(payload) {
+      if (!scriptURL) {
+        showToast("Perhatian", "URL Cloud belum diatur. Masuk ke tab Cloud URL.", "error");
+        return;
+      }
+      try {
+        await fetch(scriptURL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+      } catch (e) {
+        console.warn("Gagal fetch:", e);
+      }
     }
-    function closeModal(id) {
-      const el = document.getElementById(id);
-      el.classList.add('hidden');
-      el.classList.remove('flex');
+
+    async function syncFromCloud(showNotice = false) {
+      if (!scriptURL) return;
+      try {
+        const res = await fetch(scriptURL);
+        const data = await res.json();
+        if (data && data.permits) {
+          permitCache = data.permits;
+          renderOutsideList();
+          if (showNotice) showToast("Sinkron", "Data gerbang berhasil diperbarui.");
+        }
+      } catch (e) {
+        if (showNotice) showToast("Kendala Cloud", "Gagal memuat data dari Spreadsheet.", "error");
+      }
     }
+
+    function saveScriptUrl() {
+      const url = document.getElementById('scriptUrlInput').value.trim();
+      if (!url) return;
+      scriptURL = url;
+      localStorage.setItem("simpatikScriptURL", url);
+      showToast("Tersimpan", "URL Web App berhasil disimpan.");
+      syncFromCloud(false);
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+
     function showToast(title, msg, type = 'success') {
       const t = document.getElementById('toastNotification');
+      const icon = document.getElementById('toastIcon');
       document.getElementById('toastTitle').textContent = title;
       document.getElementById('toastMessage').textContent = msg;
+
+      icon.className = type === 'error'
+        ? "w-6 h-6 rounded-lg bg-rose-600 flex items-center justify-center font-bold text-xs shrink-0"
+        : "w-6 h-6 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-xs shrink-0";
+      icon.textContent = type === 'error' ? "✕" : "✓";
+
       t.classList.remove('-translate-y-24', 'opacity-0');
       setTimeout(() => t.classList.add('-translate-y-24', 'opacity-0'), 2800);
     }
 
-    function updateCounters() {
-      document.getElementById('statLate').textContent = lateRecords.length;
-      document.getElementById('statOutside').textContent = permitRecords.filter(p => p.status === "Di Luar Sekolah").length;
-      document.getElementById('statBK').textContent = students.filter(s => s.lateCount >= 2).length;
-    }
-
-    function quickManualAction() {
-      const q = document.getElementById('manualInputText').value.trim();
-      if (!q) return;
-      const st = students.find(s => s.nis === q || s.name.toLowerCase().includes(q.toLowerCase()));
-      if (st) openLateModal(st);
-      else showToast("Cari", "Siswa tidak ditemukan", "error");
-    }
-
-    function renderStudentCards() {
-      const g = document.getElementById('studentCardsGrid');
-      g.innerHTML = "";
-      const q = (document.getElementById('filterCardInput')?.value || "").toLowerCase();
-      students.filter(s => s.name.toLowerCase().includes(q) || s.class.toLowerCase().includes(q)).forEach(st => {
-        const item = document.createElement('div');
-        item.className = "bg-white p-3 rounded-2xl border border-slate-200 flex items-center justify-between shadow-sm";
-        item.innerHTML = `
-          <div class="min-w-0 flex-1">
-            <span class="font-bold text-xs text-slate-900 block truncate">${st.name}</span>
-            <span class="text-[10px] text-slate-500">${st.class} &bull; NIS: ${st.nis}</span>
-          </div>
-          <button onclick="openLateModal(students.find(s=>s.nis==='${st.nis}'))" class="bg-indigo-50 active:scale-95 text-indigo-700 text-[10px] font-bold px-2.5 py-1.5 rounded-xl border border-indigo-100">
-            Pilih
-          </button>
-        `;
-        g.appendChild(item);
-      });
-    }
-
     window.onload = function() {
-      renderPiketView();
-      renderSecurityView();
+      if (scriptURL) {
+        document.getElementById('scriptUrlInput').value = scriptURL;
+        syncFromCloud(false);
+      }
       renderBKView();
-      updateCounters();
     };
   </script>
 </body>
